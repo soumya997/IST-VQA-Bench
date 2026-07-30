@@ -2,7 +2,7 @@
 
 Multilingual Indian Scene Text VQA evaluation benchmark and VLM-as-a-Judge tooling.
 
-The Hugging Face dataset lives at `datasets/ist_vqa/IST-VQA-Bench` (393 test QA pairs, English / Hindi / Bengali / Tamil, embedded images + `image_sha256`).
+The Hugging Face dataset lives at [somusan/IST-VQA-Bench](https://huggingface.co/datasets/somusan/IST-VQA-Bench) (393 test QA pairs, English / Hindi / Bengali / Tamil, embedded images + `image_sha256`).
 
 ## Setup
 
