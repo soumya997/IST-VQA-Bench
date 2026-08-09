@@ -1,0 +1,527 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="description"
+        content="ISTVQA: A Diagnostic Framework for Enabling Indic Scene-Text VQA in Small Vision-Language Models.">
+  <meta name="keywords"
+        content="ISTVQA, Indic Scene-Text VQA, Vision-Language Models, LoRA, Qwen2.5-VL, PaliGemma2, Bengali, Hindi, Tamil, ICVGIP 2026">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ISTVQA</title>
+
+  <link href="https://fonts.googleapis.com/css?family=Google+Sans|Noto+Sans|Castoro" rel="stylesheet">
+  <link rel="stylesheet" href="./static/css/bulma.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/jpswalsh/academicons@1/css/academicons.min.css">
+  <link rel="stylesheet" href="./static/css/index.css">
+  <link rel="stylesheet" href="./static/css/istvqa.css">
+</head>
+
+<body>
+
+  <nav class="navbar" role="navigation" aria-label="main navigation">
+    <div class="navbar-brand">
+      <a role="button" class="navbar-burger" aria-label="menu" aria-expanded="false">
+        <span aria-hidden="true"></span>
+        <span aria-hidden="true"></span>
+        <span aria-hidden="true"></span>
+      </a>
+    </div>
+    <div class="navbar-menu">
+      <div class="navbar-start" style="flex-grow: 1; justify-content: center;">
+        <a class="navbar-item" href="#top">
+          <span class="icon"><i class="fas fa-home"></i></span>
+        </a>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link">More</a>
+          <div class="navbar-dropdown">
+            <a class="navbar-item" href="https://github.com/soumya997/IST-VQA-Bench">IST-VQA-Bench</a>
+            <a class="navbar-item" href="#dataset">Dataset</a>
+            <a class="navbar-item" href="#BibTeX">BibTeX</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <!-- TITLE -->
+  <section class="hero" id="top">
+    <div class="hero-body">
+      <div class="container is-max-desktop">
+        <div class="columns is-centered">
+          <div class="column has-text-centered">
+            <h1 class="title is-1 publication-title">
+              ISTVQA: A Diagnostic Framework for Enabling Indic Scene-Text VQA in Small Vision-Language Models
+            </h1>
+
+            <div class="is-size-5 publication-authors">
+              <span class="author-block">
+                <a href="https://github.com/soumya997">Soumyadip Sarkar</a>,
+              </span>
+              <span class="author-block">
+                Deeptendu Santra
+              </span>
+            </div>
+
+            <div class="is-size-5 publication-authors">
+              <span class="author-block">ICVGIP 2026 &nbsp;|&nbsp; Kolkata, India</span>
+            </div>
+
+            <div class="column has-text-centered">
+              <div class="publication-links">
+                <span class="link-block">
+                  <a href="static/pdfs/istvqa_paper.pdf"
+                     class="external-link button is-normal is-rounded is-dark">
+                    <span class="icon"><i class="fas fa-file-pdf"></i></span>
+                    <span>Paper</span>
+                  </a>
+                </span>
+                <span class="link-block">
+                  <a href="static/pdfs/supplementary.pdf"
+                     class="external-link button is-normal is-rounded is-dark">
+                    <span class="icon"><i class="ai ai-arxiv"></i></span>
+                    <span>Supplementary</span>
+                  </a>
+                </span>
+                <span class="link-block">
+                  <a href="https://github.com/soumya997/IST-VQA-Bench"
+                     class="external-link button is-normal is-rounded is-dark">
+                    <span class="icon"><i class="fab fa-github"></i></span>
+                    <span>Code / Bench</span>
+                  </a>
+                </span>
+                <span class="link-block">
+                  <a href="#dataset"
+                     class="external-link button is-normal is-rounded is-dark">
+                    <span class="icon"><i class="far fa-images"></i></span>
+                    <span>Dataset</span>
+                  </a>
+                </span>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- TEASER -->
+  <section class="hero teaser">
+    <div class="container is-max-desktop">
+      <div class="hero-body">
+        <img src="static/images/pipeline.png"
+             alt="ISTVQA diagnostic pipeline: VLM architecture with LoRA-only and LoRA+connector training configs.">
+        <h2 class="subtitle has-text-centered">
+          Left: general VLM architecture with our two training configurations.
+          Config&nbsp;1 applies LoRA (<i>r</i>=16) to the LLM only; Config&nbsp;2 additionally unfreezes the connector.
+          Right: connector architectures for PaliGemma2 (single linear layer) and Qwen2.5-VL (2-layer MLP).
+        </h2>
+      </div>
+    </div>
+  </section>
+
+  <!-- ABSTRACT -->
+  <section class="section">
+    <div class="container is-max-desktop">
+      <div class="columns is-centered has-text-centered">
+        <div class="column is-full">
+          <h2 class="title is-3">Abstract</h2>
+          <div class="content has-text-justified">
+            <p>
+              Vision-language models (VLMs) perform well on English scene-text visual question answering (VQA)
+              but degrade sharply on Indic scripts such as Bengali, Hindi, and Tamil. Prior work addresses this
+              by proposing new models, architectural changes or datasets, but none systematically diagnoses
+              <em>which architectural component</em>—tokenizer, vision encoder, connector, or language model—constitutes
+              the binding bottleneck for each script.
+            </p>
+            <p>
+              We introduce <span class="dnerf">IstVqa</span>, a diagnostic framework that isolates per-component
+              failures through a systematic methodology. We begin by selecting three open-weight small-scale base
+              VLMs—SmolVLM2 (2B), Qwen2.5-VL (3B), and PaliGemma2 (3B)—spanning diverse connector architectures,
+              and apply a tokenizer fertility gate that eliminates SmolVLM2 due to severe Indic fragmentation.
+              The two surviving models then undergo a controlled ablation grid: two training configurations
+              (LLM LoRA-only versus LLM LoRA with connector unfreeze), three dataset scales
+              (𝒟<sub>1</sub>=8.7K, 𝒟<sub>2</sub>=20.7K, 𝒟<sub>3</sub>=40.2K samples), across four languages,
+              yielding 12 fine-tuning experiments.
+            </p>
+            <p>
+              Our Case&nbsp;A/B classification reveals that Qwen2.5-VL's Indic failures are predominantly
+              Language-side (Case&nbsp;A): LoRA alone lifts the overall judge score from 0.581 to 0.789 (+35.8%),
+              while connector unfreezing provides no benefit. PaliGemma2 exhibits a mixed profile: LoRA-only
+              improves from 0.507 to 0.707, but connector unfreezing additionally helps at larger data scales
+              (0.720 at 𝒟<sub>3</sub>), indicating a partial Vision-Projection bottleneck (Case&nbsp;B).
+              We open-source <span class="dnerf">IstVQA</span>-qa, <span class="dnerf">IST-VQA-Bench</span>,
+              and our complete evaluation pipeline.
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- TL;DR / CONTRIBUTIONS -->
+  <section class="section" style="background-color: #fafafa;">
+    <div class="container is-max-desktop">
+      <div class="columns is-centered has-text-centered">
+        <div class="column is-full">
+          <h2 class="title is-3">Contributions</h2>
+        </div>
+      </div>
+      <div class="content has-text-justified">
+        <ol>
+          <li>
+            A <strong>diagnostic framework</strong> (<span class="dnerf">IstVqa</span>) with Case&nbsp;A/B
+            classification that identifies per-script architectural bottlenecks in VLMs, providing practitioners
+            with an actionable methodology rather than a black-box improvement.
+          </li>
+          <li>
+            <strong><span class="dnerf">IstVQA</span>-qa and <span class="dnerf">IST-VQA-Bench</span></strong>,
+            an open-source curated VQA training corpus and evaluation benchmark for Indic scene-text VQA covering
+            Bengali, Hindi, Tamil, and English across six data sources.
+          </li>
+          <li>
+            <strong>Empirical findings</strong> from 12 fine-tuning experiments: Qwen2.5-VL is Case&nbsp;A
+            (Language-side; LoRA alone gives +35.8%), while PaliGemma2 exhibits mixed Case&nbsp;A/B behavior.
+            We additionally quantify English capability regression across both models.
+          </li>
+        </ol>
+      </div>
+    </div>
+  </section>
+
+  <!-- METHOD -->
+  <section class="section">
+    <div class="container is-max-desktop">
+      <div class="columns is-centered has-text-centered">
+        <div class="column is-full">
+          <h2 class="title is-3">Diagnostic Framework</h2>
+        </div>
+      </div>
+
+      <div class="content has-text-justified">
+        <p>
+          A VLM processes a scene-text VQA query through four stages: <strong>Tokenizer</strong>,
+          <strong>Vision Encoder (ViT)</strong>, <strong>Connector</strong>, and
+          <strong>Language Model (LLM)</strong>. A failure at any stage can manifest as poor Indic VQA performance.
+          <span class="dnerf">IstVqa</span> isolates the binding bottleneck with a controlled ablation grid.
+        </p>
+
+        <h3 class="title is-4">Step 0 — Tokenizer Fertility Gate</h3>
+        <p>
+          Before structural ablations, we measure tokenizer fertility (tokens/character). Models with severe
+          Indic fragmentation are eliminated. SmolVLM2 requires &gt;1.7 tok/char for Bengali/Tamil and is
+          removed from further fine-tuning; Qwen2.5-VL and PaliGemma2 proceed.
+        </p>
+
+        <div class="table-container">
+          <table class="table is-striped is-fullwidth is-hoverable">
+            <caption>Tokenizer fertility (tok/char). Lower is better.</caption>
+            <thead>
+              <tr>
+                <th>Language</th>
+                <th>SmolVLM2</th>
+                <th>Qwen2.5-VL</th>
+                <th>PaliGemma2</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr><td>Bengali</td><td>1.824</td><td>1.080</td><td><strong>0.543</strong></td></tr>
+              <tr><td>Hindi</td><td>1.081</td><td>0.918</td><td><strong>0.326</strong></td></tr>
+              <tr><td>Tamil</td><td>1.731</td><td>1.088</td><td><strong>0.440</strong></td></tr>
+              <tr><td>English</td><td>0.200</td><td>0.200</td><td>0.200</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <h3 class="title is-4">Training Configurations</h3>
+        <ul>
+          <li>
+            <strong>Config&nbsp;1 (LoRA-only):</strong> LoRA (<i>r</i>=16) on the LLM; ViT and connector frozen.
+            Tests whether the LLM alone is the bottleneck.
+          </li>
+          <li>
+            <strong>Config&nbsp;2 (LoRA + Connector):</strong> LLM LoRA plus full connector unfreeze.
+            Tests whether the connector distorts or discards Indic visual features.
+          </li>
+        </ul>
+
+        <h3 class="title is-4">Case A / Case B Classification</h3>
+        <ul>
+          <li>
+            <strong>Case&nbsp;A (Language-side):</strong> LoRA-only yields large gains; the connector already
+            projects Indic features adequately. Cheaper fix — LoRA on a few thousand samples.
+          </li>
+          <li>
+            <strong>Case&nbsp;B (Vision-Projection):</strong> LoRA-only is limited; connector unfreeze helps
+            (or evidence suggests an upstream ViT issue). Requires more invasive intervention.
+          </li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- RESULTS -->
+  <section class="section" style="background-color: #fafafa;">
+    <div class="container is-max-desktop">
+      <div class="columns is-centered has-text-centered">
+        <div class="column is-full">
+          <h2 class="title is-3">Quantitative Results</h2>
+        </div>
+      </div>
+
+      <div class="content has-text-justified">
+        <p>
+          Across 12 fine-tuning runs, Qwen2.5-VL peaks with LoRA-only at 𝒟<sub>3</sub>
+          (<strong>(0.789, +35.8%)</strong>, while PaliGemma2 peaks with LoRA+Conn at 𝒟<sub>3</sub>
+          <strong>(0.720)</strong>. Stars in the figure mark each model's best checkpoint.
+        </p>
+      </div>
+
+      <div class="columns is-centered has-text-centered">
+        <div class="column">
+          <figure>
+            <img src="static/images/istbench_grouped_bars.png"
+                 alt="IST-VQA-Bench overall judge scores across fine-tuning configurations."
+                 style="width: 85%;">
+            <figcaption>
+              IST-VQA-Bench overall judge scores. Qwen2.5-VL is Case&nbsp;A; PaliGemma2 is mixed Case&nbsp;A/B.
+            </figcaption>
+          </figure>
+        </div>
+      </div>
+
+      <div class="content has-text-justified">
+        <h3 class="title is-4">Zero-shot vs Best Fine-tuned</h3>
+      </div>
+
+      <div class="table-container">
+        <table class="table is-striped is-fullwidth is-hoverable">
+          <caption>Overall judge scores on IST-VQA-Bench (Gemini 3.1 Flash Lite judge).</caption>
+          <thead>
+            <tr>
+              <th>Model</th>
+              <th>Zero-shot</th>
+              <th>Best FT</th>
+              <th>Config</th>
+              <th>Δ</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Qwen2.5-VL-3B</td>
+              <td>0.581</td>
+              <td><strong>0.789</strong></td>
+              <td>LoRA, 𝒟<sub>3</sub></td>
+              <td>+35.8%</td>
+            </tr>
+            <tr>
+              <td>PaliGemma2-3B</td>
+              <td>0.507</td>
+              <td><strong>0.720</strong></td>
+              <td>LoRA+Conn, 𝒟<sub>3</sub></td>
+              <td>+42.0%</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="columns is-centered has-text-centered" style="margin-top: 2rem;">
+        <div class="column">
+          <figure>
+            <img src="static/images/perlang_radar.png"
+                 alt="Per-language radar plots for best checkpoints versus zero-shot."
+                 style="width: 90%;">
+            <figcaption>
+              Per-language radar plots for best checkpoints (solid) vs zero-shot (dashed).
+              Large Indic gains with minimal English change; Qwen2.5-VL reaches higher Indic ceilings.
+            </figcaption>
+          </figure>
+        </div>
+      </div>
+
+      <div class="content has-text-justified">
+        <h3 class="title is-4">Diagnosis Summary</h3>
+      </div>
+      <div class="table-container">
+        <table class="table is-striped is-fullwidth is-hoverable">
+          <caption>Case A/B diagnosis per model and script. A = Language-side; A/B = mixed.</caption>
+          <thead>
+            <tr>
+              <th>Model</th>
+              <th>Bengali</th>
+              <th>Hindi</th>
+              <th>Tamil</th>
+              <th>English</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Qwen2.5-VL</td>
+              <td>A</td><td>A</td><td>A</td><td>—</td>
+            </tr>
+            <tr>
+              <td>PaliGemma2</td>
+              <td>A/B</td><td>A</td><td>A/B</td><td>—</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- QUALITATIVE -->
+  <section class="section">
+    <div class="container is-max-desktop">
+      <div class="columns is-centered has-text-centered">
+        <div class="column is-full">
+          <h2 class="title is-3">Qualitative Results</h2>
+        </div>
+      </div>
+      <div class="content has-text-justified">
+        <p>
+          Representative examples illustrating each diagnostic category. Row&nbsp;1: Case&nbsp;A success on
+          Qwen2.5-VL (Bengali hallucination corrected by LoRA). Row&nbsp;2: Case&nbsp;A on PaliGemma2.
+          Row&nbsp;3: Case&nbsp;B — spatial Hindi localization requires connector unfreeze.
+          Row&nbsp;4: ViT-level bottleneck where fine-tuning cannot fix dense handwritten Bengali.
+        </p>
+      </div>
+      <div class="columns is-centered has-text-centered">
+        <div class="column">
+          <figure>
+            <img src="static/images/qualitative-1.png"
+                 alt="Qualitative examples illustrating Case A, Case B, and ViT-level bottlenecks."
+                 style="width: 100%;">
+          </figure>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- DATASET -->
+  <section class="section" id="dataset" style="background-color: #fafafa;">
+    <div class="container is-max-desktop">
+      <div class="columns is-centered has-text-centered">
+        <div class="column is-full">
+          <h2 class="title is-3">Dataset</h2>
+        </div>
+      </div>
+      <div class="content has-text-justified">
+        <p>
+          We release <span class="dnerf">IstVQA</span>-qa at three nested scales and
+          <span class="dnerf">IST-VQA-Bench</span> (~400 evaluation samples) covering Bengali, Hindi,
+          Tamil, and English. Images come from six sources: BSTD, Docs, Crawl, IndicSTR12, Synth, and TextVQA.
+          QA pairs are generated with a Gemini-based pipeline and verified via human quality checks.
+        </p>
+      </div>
+
+      <div class="table-container">
+        <table class="table is-striped is-fullwidth is-hoverable">
+          <caption>IstVQA-qa / IST-VQA-Bench statistics by scale and language.</caption>
+          <thead>
+            <tr>
+              <th>Language</th>
+              <th>𝒟<sub>1</sub></th>
+              <th>𝒟<sub>2</sub></th>
+              <th>𝒟<sub>3</sub></th>
+              <th>Test</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><td>Bengali</td><td>2,161</td><td>5,700</td><td>10,129</td><td>97</td></tr>
+            <tr><td>Hindi</td><td>2,177</td><td>5,151</td><td>10,162</td><td>99</td></tr>
+            <tr><td>Tamil</td><td>2,175</td><td>5,169</td><td>9,793</td><td>97</td></tr>
+            <tr><td>English</td><td>2,175</td><td>5,175</td><td>10,175</td><td>100</td></tr>
+            <tr>
+              <td><strong>Total</strong></td>
+              <td><strong>8,688</strong></td>
+              <td><strong>20,672</strong></td>
+              <td><strong>40,259</strong></td>
+              <td><strong>393</strong></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p class="has-text-centered" style="margin-top: 1.5rem;">
+        Benchmark repository:
+        <a href="https://github.com/soumya997/IST-VQA-Bench">github.com/soumya997/IST-VQA-Bench</a>
+      </p>
+    </div>
+  </section>
+
+  <!-- TAKEAWAYS -->
+  <section class="section">
+    <div class="container is-max-desktop">
+      <div class="columns is-centered has-text-centered">
+        <div class="column is-full">
+          <h2 class="title is-3">Practitioner Takeaways</h2>
+        </div>
+      </div>
+      <div class="content has-text-justified">
+        <ol>
+          <li>
+            <strong>Fertility gate first.</strong> Eliminate models with severe Indic tokenization
+            fragmentation before investing in fine-tuning.
+          </li>
+          <li>
+            <strong>Start with LoRA on the LLM.</strong> For Qwen2.5-VL this alone recovers most Indic
+            performance with negligible English regression.
+          </li>
+          <li>
+            <strong>Unfreeze thin connectors only with enough data.</strong> PaliGemma2's single linear
+            connector benefits from unfreezing only beyond ~20K samples.
+          </li>
+          <li>
+            <strong>Tokenizer quality ≠ VQA quality.</strong> PaliGemma2 has the best Indic fertility yet
+            consistently trails Qwen2.5-VL — connector capacity and visual grounding matter more.
+          </li>
+        </ol>
+      </div>
+    </div>
+  </section>
+
+  <!-- BIBTEX -->
+  <section class="section" id="BibTeX">
+    <div class="container is-max-desktop content">
+      <h2 class="title">BibTeX</h2>
+      <pre><code>@inproceedings{sarkar2026istvqa,
+  author    = {Soumyadip Sarkar and Deeptendu Santra},
+  title     = {{ISTVQA}: A Diagnostic Framework for Enabling Indic Scene-Text VQA in Small Vision-Language Models},
+  booktitle = {Indian Conference on Computer Vision, Graphics, and Image Processing (ICVGIP 2026)},
+  year      = {2026},
+  address   = {Kolkata, India},
+  note      = {To appear}
+}</code></pre>
+    </div>
+  </section>
+
+  <!-- CONTACT -->
+  <section class="section" id="Contact">
+    <div class="container is-max-desktop content">
+      <h2 class="title">Contact</h2>
+      <div class="content has-text-justified">
+        <p>
+          Questions? Please reach out via
+          <a href="https://github.com/soumya997/IST-VQA-Bench/issues">GitHub Issues</a>
+          on the IST-VQA-Bench repository.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer class="footer">
+    <div align="center" class="container">
+      <div class="columns is-centered">
+        <div class="content is-8">
+          This website template is borrowed from
+          <a href="https://github.com/nerfies/nerfies.github.io">nerfies</a>.
+        </div>
+      </div>
+    </div>
+  </footer>
+
+</body>
+</html>
